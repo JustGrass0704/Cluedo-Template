@@ -191,7 +191,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 600px;
+      min-width: 640px;
     }
 
     thead { background: rgba(255, 255, 255, 0.03); }
@@ -293,13 +293,21 @@
 
     .row-crossed td:first-child { background: #171726; }
 
-    .cross-col { text-align: center; }
+    .own-col,
+    .shown-col {
+      text-align: center;
+    }
 
-    .cross-checkbox {
+    .own-checkbox,
+    .shown-checkbox {
       width: 18px;
       height: 18px;
-      accent-color: #ff9b9b;
       cursor: pointer;
+      accent-color: #9dff8f;
+    }
+
+    .shown-checkbox {
+      accent-color: #ff9b9b;
     }
 
     /* Mobile card layout */
@@ -332,6 +340,7 @@
       justify-content: space-between;
       gap: 6px;
       margin-bottom: 4px;
+      flex-wrap: wrap;
     }
 
     .card-title {
@@ -342,7 +351,15 @@
       text-overflow: ellipsis;
     }
 
-    .card-cross {
+    .card-flags {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .card-flag {
       display: inline-flex;
       align-items: center;
       gap: 4px;
@@ -350,9 +367,13 @@
       color: var(--muted);
     }
 
-    .card-cross input {
+    .card-flag input {
       width: 16px;
       height: 16px;
+      accent-color: #9dff8f;
+    }
+
+    .card-flag-shown input {
       accent-color: #ff9b9b;
     }
 
@@ -462,7 +483,7 @@
 <div class="app">
   <h1>Original Cluedo Clue Sheet</h1>
   <div class="subtitle">
-    Tap to cycle: blank → ✓ → ✗ → ? &nbsp;|&nbsp; Tick the box to cross out a card.
+    Tap to cycle: blank → ✓ → ✗ → ? &nbsp;|&nbsp; Own / Shown = Marked Out & Removed From Guesses.
   </div>
 
   <!-- Legend -->
@@ -607,10 +628,18 @@
     maybe: "They might have"
   };
 
+  // marks: per-player marks
+  // own: you have this card
+  // shown: someone has shown you this card
   var state = {
     marks: {},   // "cardIdx-playerIdx" -> mark state
-    crossed: {}  // cardIdx -> bool
+    own:   {},   // cardIdx -> bool
+    shown: {}    // cardIdx -> bool
   };
+
+  function isOut(cardIdx) {
+    return !!(state.own[cardIdx] || state.shown[cardIdx]);
+  }
 
   var playerNames = INITIAL_PLAYER_NAMES.slice();
 
@@ -712,9 +741,13 @@
       headerRow.appendChild(th);
     }
 
-    var thCross = document.createElement("th");
-    thCross.textContent = "Cross Out";
-    headerRow.appendChild(thCross);
+    var thOwn = document.createElement("th");
+    thOwn.textContent = "Own";
+    headerRow.appendChild(thOwn);
+
+    var thShown = document.createElement("th");
+    thShown.textContent = "Shown";
+    headerRow.appendChild(thShown);
 
     var lastSection = null;
 
@@ -728,7 +761,7 @@
         var secTr = document.createElement("tr");
         secTr.className = "section-row";
         var secTd = document.createElement("td");
-        secTd.colSpan = playerCount + 2;
+        secTd.colSpan = playerCount + 3;
         secTd.textContent = section;
         secTr.appendChild(secTd);
         bodyRows.appendChild(secTr);
@@ -736,7 +769,7 @@
 
       (function(cardIdx, sectionName, cardName) {
         var tr = document.createElement("tr");
-        if (state.crossed[cardIdx]) {
+        if (isOut(cardIdx)) {
           tr.classList.add("row-crossed");
         }
 
@@ -772,16 +805,17 @@
           })(p);
         }
 
-        var tdCross = document.createElement("td");
-        tdCross.className = "cross-col";
-        var checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.className = "cross-checkbox";
-        checkbox.checked = !!state.crossed[cardIdx];
+        // Own checkbox
+        var tdOwn = document.createElement("td");
+        tdOwn.className = "own-col";
+        var ownCheckbox = document.createElement("input");
+        ownCheckbox.type = "checkbox";
+        ownCheckbox.className = "own-checkbox";
+        ownCheckbox.checked = !!state.own[cardIdx];
 
-        checkbox.addEventListener("change", function() {
-          state.crossed[cardIdx] = checkbox.checked;
-          if (checkbox.checked) {
+        ownCheckbox.addEventListener("change", function() {
+          state.own[cardIdx] = ownCheckbox.checked;
+          if (isOut(cardIdx)) {
             tr.classList.add("row-crossed");
           } else {
             tr.classList.remove("row-crossed");
@@ -790,8 +824,31 @@
           updateGuessDropdowns();
         });
 
-        tdCross.appendChild(checkbox);
-        tr.appendChild(tdCross);
+        tdOwn.appendChild(ownCheckbox);
+        tr.appendChild(tdOwn);
+
+        // Shown checkbox
+        var tdShown = document.createElement("td");
+        tdShown.className = "shown-col";
+        var shownCheckbox = document.createElement("input");
+        shownCheckbox.type = "checkbox";
+        shownCheckbox.className = "shown-checkbox";
+        shownCheckbox.checked = !!state.shown[cardIdx];
+
+        shownCheckbox.addEventListener("change", function() {
+          state.shown[cardIdx] = shownCheckbox.checked;
+          if (isOut(cardIdx)) {
+            tr.classList.add("row-crossed");
+          } else {
+            tr.classList.remove("row-crossed");
+          }
+          buildMobileCards();
+          updateGuessDropdowns();
+        });
+
+        tdShown.appendChild(shownCheckbox);
+        tr.appendChild(tdShown);
+
         bodyRows.appendChild(tr);
       })(c, section, name);
     }
@@ -820,7 +877,7 @@
       (function(cardIdx, sectionName, cardName) {
         var cardDiv = document.createElement("div");
         cardDiv.className = "clue-card";
-        if (state.crossed[cardIdx]) {
+        if (isOut(cardIdx)) {
           cardDiv.classList.add("crossed");
         }
 
@@ -831,16 +888,37 @@
         titleSpan.className = "card-title";
         titleSpan.textContent = cardName;
 
-        var crossLabel = document.createElement("label");
-        crossLabel.className = "card-cross";
+        var flagsDiv = document.createElement("div");
+        flagsDiv.className = "card-flags";
 
-        var checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.checked = !!state.crossed[cardIdx];
+        // Own
+        var ownLabel = document.createElement("label");
+        ownLabel.className = "card-flag";
+        var ownCheckbox = document.createElement("input");
+        ownCheckbox.type = "checkbox";
+        ownCheckbox.checked = !!state.own[cardIdx];
+        var ownText = document.createElement("span");
+        ownText.textContent = "Own";
+        ownLabel.appendChild(ownCheckbox);
+        ownLabel.appendChild(ownText);
 
-        checkbox.addEventListener("change", function() {
-          state.crossed[cardIdx] = checkbox.checked;
-          if (checkbox.checked) {
+        // Shown
+        var shownLabel = document.createElement("label");
+        shownLabel.className = "card-flag card-flag-shown";
+        var shownCheckbox = document.createElement("input");
+        shownCheckbox.type = "checkbox";
+        shownCheckbox.checked = !!state.shown[cardIdx];
+        var shownText = document.createElement("span");
+        shownText.textContent = "Shown";
+        shownLabel.appendChild(shownCheckbox);
+        shownLabel.appendChild(shownText);
+
+        flagsDiv.appendChild(ownLabel);
+        flagsDiv.appendChild(shownLabel);
+
+        ownCheckbox.addEventListener("change", function() {
+          state.own[cardIdx] = ownCheckbox.checked;
+          if (isOut(cardIdx)) {
             cardDiv.classList.add("crossed");
           } else {
             cardDiv.classList.remove("crossed");
@@ -849,14 +927,19 @@
           updateGuessDropdowns();
         });
 
-        var crossText = document.createElement("span");
-        crossText.textContent = "Out";
-
-        crossLabel.appendChild(checkbox);
-        crossLabel.appendChild(crossText);
+        shownCheckbox.addEventListener("change", function() {
+          state.shown[cardIdx] = shownCheckbox.checked;
+          if (isOut(cardIdx)) {
+            cardDiv.classList.add("crossed");
+          } else {
+            cardDiv.classList.remove("crossed");
+          }
+          buildDesktopTable();
+          updateGuessDropdowns();
+        });
 
         topDiv.appendChild(titleSpan);
-        topDiv.appendChild(crossLabel);
+        topDiv.appendChild(flagsDiv);
 
         var playersDiv = document.createElement("div");
         playersDiv.className = "card-players";
@@ -931,7 +1014,7 @@
     var locations = [];
 
     for (var i = 0; i < FLAT_CARDS.length; i++) {
-      if (state.crossed[i]) continue;
+      if (isOut(i)) continue;   // Remove if Own or Shown
       var card = FLAT_CARDS[i];
       if (card.section === "Suspects") {
         suspects.push(card.name);
@@ -949,7 +1032,7 @@
 
   function resetSheet() {
     if (!confirm("Clear everything for this sheet?")) return;
-    state = { marks: {}, crossed: {} };
+    state = { marks: {}, own: {}, shown: {} };
     buildDesktopTable();
     buildMobileCards();
     updateGuessDropdowns();
