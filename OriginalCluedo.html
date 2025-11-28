@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Original Cluedo Clue Sheet</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #101018;
+      --card: #181827;
+      --accent: #ffdd55;
+      --text: #f5f5f5;
+      --muted: #9fa4bd;
+      --border: #26263a;
+
+      --tick-bg: rgba(157, 255, 143, 0.08);
+      --tick-border: rgba(157, 255, 143, 0.7);
+      --tick-color: #9dff8f;
+
+      --cross-bg: rgba(255, 90, 90, 0.1);
+      --cross-border: rgba(255, 120, 120, 0.7);
+      --cross-color: #ff9b9b;
+
+      --maybe-bg: rgba(255, 221, 85, 0.1);
+      --maybe-border: rgba(255, 221, 85, 0.7);
+      --maybe-color: #ffdd55;
+
+      --none-border: rgba(255, 255, 255, 0.12);
+      --none-color: #9fa4bd;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+      background: radial-gradient(circle at top, #252546 0, #050510 55%);
+      color: var(--text);
+    }
+
+    .app {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 8px 10px 18px;
+    }
+
+    h1 {
+      font-size: 1.35rem;
+      margin: 0 0 6px;
+      text-align: center;
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    /* Legend */
+    .legend {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .legend-box {
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      border: 2px solid transparent;
+    }
+
+    .legend-tick {
+      background: var(--tick-bg);
+      border-color: var(--tick-border);
+    }
+
+    .legend-cross {
+      background: var(--cross-bg);
+      border-color: var(--cross-border);
+    }
+
+    .legend-maybe {
+      background: var(--maybe-bg);
+      border-color: var(--maybe-border);
+    }
+
+    .legend-none {
+      border-color: var(--none-border);
+      background: transparent;
+    }
+
+    /* Player inputs */
+    .names-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 6px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .name-input {
+      background: #181827;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      font-size: 0.85rem;
+      color: var(--text);
+      min-width: 60px;
+      text-align: center;
+    }
+
+    .name-input::placeholder {
+      color: #555a76;
+    }
+
+    .names-buttons {
+      display: flex;
+      gap: 4px;
+      margin-left: 4px;
+    }
+
+    .names-btn {
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: #221f3b;
+      color: var(--muted);
+      font-size: 0.8rem;
+      padding: 3px 10px;
+      cursor: pointer;
+    }
+
+    .names-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 8px;
+    }
+
+    .reset-btn {
+      border: 1px solid var(--border);
+      background: #221f3b;
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 5px 12px;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+
+    .reset-btn:hover {
+      border-color: #ff8080;
+      color: #ffb0b0;
+    }
+
+    .footer-note {
+      margin-top: 8px;
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    /* Desktop table layout */
+    #desktopContainer { display: block; }
+    #mobileContainer  { display: none; }
+
+    .table-wrapper {
+      background: rgba(0, 0, 0, 0.25);
+      border-radius: 12px;
+      padding: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 600px;
+    }
+
+    thead { background: rgba(255, 255, 255, 0.03); }
+
+    th, td {
+      border-bottom: 1px solid var(--border);
+      padding: 7px 5px;
+      text-align: left;
+      font-size: 0.8rem;
+    }
+
+    th {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      position: sticky;
+      top: 0;
+      backdrop-filter: blur(8px);
+      background: rgba(10, 10, 24, 0.9);
+      z-index: 2;
+    }
+
+    th:first-child {
+      position: sticky;
+      left: 0;
+      z-index: 3;
+      background: rgba(10, 10, 24, 0.98);
+    }
+
+    td:first-child {
+      position: sticky;
+      left: 0;
+      z-index: 1;
+      background: #11111e;
+    }
+
+    tbody tr:nth-child(even) td {
+      background: rgba(255, 255, 255, 0.01);
+    }
+
+    .card-name {
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    .section-row td {
+      background: #1b1b2b;
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+    }
+
+    .mark-cell {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      user-select: none;
+      font-size: 0.95rem;
+    }
+
+    .mark-none {
+      color: var(--muted);
+      background: transparent;
+      border-color: transparent;
+    }
+
+    .mark-tick {
+      color: var(--tick-color);
+      background: var(--tick-bg);
+      border-color: var(--tick-border);
+    }
+
+    .mark-cross {
+      color: var(--cross-color);
+      background: var(--cross-bg);
+      border-color: var(--cross-border);
+    }
+
+    .mark-maybe {
+      color: var(--maybe-color);
+      background: var(--maybe-bg);
+      border-color: var(--maybe-border);
+    }
+
+    .row-crossed td {
+      text-decoration: line-through;
+      color: #666a80;
+      opacity: 0.7;
+    }
+
+    .row-crossed td:first-child { background: #171726; }
+
+    .cross-col { text-align: center; }
+
+    .cross-checkbox {
+      width: 18px;
+      height: 18px;
+      accent-color: #ff9b9b;
+      cursor: pointer;
+    }
+
+    /* Mobile card layout */
+    #mobileContainer { margin-top: 4px; }
+
+    .section-header {
+      margin-top: 8px;
+      margin-bottom: 4px;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      padding: 0 2px;
+    }
+
+    .clue-card {
+      background: #171726;
+      border-radius: 10px;
+      padding: 7px 9px;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      margin-bottom: 6px;
+    }
+
+    .clue-card.crossed { opacity: 0.6; }
+    .clue-card.crossed .card-title { text-decoration: line-through; }
+
+    .card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .card-cross {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .card-cross input {
+      width: 16px;
+      height: 16px;
+      accent-color: #ff9b9b;
+    }
+
+    .card-players {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      justify-content: center;
+    }
+
+    .player-chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      padding: 3px 9px;
+      font-size: 0.8rem;
+      border: 1px solid transparent;
+      min-width: 40px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .chip-none {
+      border-color: var(--none-border);
+      color: var(--none-color);
+      background: transparent;
+    }
+
+    .chip-tick {
+      color: var(--tick-color);
+      background: var(--tick-bg);
+      border-color: var(--tick-border);
+    }
+
+    .chip-cross {
+      color: var(--cross-color);
+      background: var(--cross-bg);
+      border-color: var(--cross-border);
+    }
+
+    .chip-maybe {
+      color: var(--maybe-color);
+      background: var(--maybe-bg);
+      border-color: var(--maybe-border);
+    }
+
+    /* Guess section */
+    .guess-section {
+      margin-top: 10px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: #171726;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .guess-title {
+      font-size: 0.9rem;
+      margin-bottom: 6px;
+      text-align: center;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .guess-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    .guess-field {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      font-size: 0.78rem;
+    }
+
+    .guess-label { color: var(--muted); }
+
+    .guess-select {
+      background: #101020;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      color: var(--text);
+      font-size: 0.8rem;
+      min-width: 130px;
+    }
+
+    .guess-select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    @media (max-width: 720px) {
+      #desktopContainer { display: none; }
+      #mobileContainer  { display: block; }
+
+      h1 { font-size: 1.2rem; }
+      .subtitle { font-size: 0.78rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <h1>Original Cluedo Clue Sheet</h1>
+  <div class="subtitle">
+    Tap to cycle: blank → ✓ → ✗ → ? &nbsp;|&nbsp; Tick the box to cross out a card.
+  </div>
+
+  <!-- Legend -->
+  <div class="legend">
+    <div class="legend-item">
+      <div class="legend-box legend-tick"></div>
+      <span>I Think They Have</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-box legend-cross"></div>
+      <span>I Don’t Think They Have</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-box legend-maybe"></div>
+      <span>They Might Have</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-box legend-none"></div>
+      <span>Unknown</span>
+    </div>
+  </div>
+
+  <!-- Player names -->
+  <div class="names-row" id="nameInputsRow"></div>
+
+  <!-- Reset button -->
+  <div class="controls">
+    <button class="reset-btn" id="resetBtn">Reset sheet</button>
+  </div>
+
+  <!-- Desktop/tablet layout -->
+  <div id="desktopContainer">
+    <div class="table-wrapper">
+      <table>
+        <thead>
+        <tr id="headerRow"></tr>
+        </thead>
+        <tbody id="bodyRows"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Mobile layout -->
+  <div id="mobileContainer">
+    <div id="mobileSections"></div>
+  </div>
+
+  <!-- Guess section -->
+  <div class="guess-section">
+    <div class="guess-title">My Current Guess</div>
+    <div class="guess-row">
+      <div class="guess-field">
+        <span class="guess-label">Suspect</span>
+        <select id="guessSuspect" class="guess-select"></select>
+      </div>
+      <div class="guess-field">
+        <span class="guess-label">Weapon</span>
+        <select id="guessWeapon" class="guess-select"></select>
+      </div>
+      <div class="guess-field">
+        <span class="guess-label">Location</span>
+        <select id="guessLocation" class="guess-select"></select>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-note">
+    ✓ = definitely has it, ✗ = definitely doesn’t, ? = maybe.
+  </div>
+</div>
+
+<script>
+  // --- Original Cluedo data ---
+  var SECTIONS = [
+    {
+      title: "Suspects",
+      cards: [
+        "Miss Scarlett",
+        "Colonel Mustard",
+        "Reverend Green",
+        "Mrs. Peacock",
+        "Professor Plum",
+        "Mrs. White"
+      ]
+    },
+    {
+      title: "Weapons",
+      cards: [
+        "Candlestick",
+        "Dagger",
+        "Lead Pipe",
+        "Revolver",
+        "Rope",
+        "Wrench"
+      ]
+    },
+    {
+      title: "Locations",
+      cards: [
+        "Kitchen",
+        "Ballroom",
+        "Conservatory",
+        "Billiard Room",
+        "Library",
+        "Study",
+        "Hall",
+        "Lounge",
+        "Dining Room"
+      ]
+    }
+  ];
+
+  // Flatten + sort
+  var FLAT_CARDS = [];
+  (function buildFlat() {
+    for (var s = 0; s < SECTIONS.length; s++) {
+      var section = SECTIONS[s];
+      var sorted = section.cards.slice().sort(function(a, b) {
+        return a.localeCompare(b, undefined, { sensitivity: "base" });
+      });
+      section.sortedCards = sorted;
+      for (var i = 0; i < sorted.length; i++) {
+        FLAT_CARDS.push({ section: section.title, name: sorted[i] });
+      }
+    }
+  })();
+
+  var INITIAL_PLAYER_NAMES = ["Me", "A", "P"];
+  var MAX_PLAYERS = 8;
+
+  var MARK_STATES = ["none", "tick", "cross", "maybe"];
+  var MARK_SYMBOLS = {
+    none: "",
+    tick: "✓",
+    cross: "✗",
+    maybe: "?"
+  };
+  var MARK_LABELS = {
+    none: "Unknown",
+    tick: "I think they have",
+    cross: "I don’t think they have",
+    maybe: "They might have"
+  };
+
+  var state = {
+    marks: {},   // "cardIdx-playerIdx" -> mark state
+    crossed: {}  // cardIdx -> bool
+  };
+
+  var playerNames = INITIAL_PLAYER_NAMES.slice();
+
+  function getPlayerName(i) {
+    var raw = (playerNames[i] || "").trim();
+    return raw || ("P" + (i + 1));
+  }
+
+  function chipLabel(playerIdx, markState) {
+    var base = getPlayerName(playerIdx);
+    var sym = MARK_SYMBOLS[markState] || "";
+    return sym ? (sym + " " + base) : base;
+  }
+
+  function buildNameInputs() {
+    var row = document.getElementById("nameInputsRow");
+    row.innerHTML = "";
+
+    for (var i = 0; i < playerNames.length; i++) {
+      (function(i) {
+        var input = document.createElement("input");
+        input.type = "text";
+        input.className = "name-input";
+        input.maxLength = 8;
+        input.placeholder = "P" + (i + 1);
+        input.value = playerNames[i];
+
+        input.addEventListener("input", function() {
+          playerNames[i] = input.value.trim();
+          buildDesktopTable();
+          buildMobileCards();
+          updateGuessDropdowns();
+        });
+
+        row.appendChild(input);
+      })(i);
+    }
+
+    var btnContainer = document.createElement("div");
+    btnContainer.className = "names-buttons";
+
+    var addBtn = document.createElement("button");
+    addBtn.className = "names-btn";
+    addBtn.textContent = "+ Add";
+    addBtn.addEventListener("click", function() {
+      if (playerNames.length >= MAX_PLAYERS) return;
+      playerNames.push("");
+      buildNameInputs();
+      buildDesktopTable();
+      buildMobileCards();
+      updateGuessDropdowns();
+    });
+
+    var removeBtn = document.createElement("button");
+    removeBtn.className = "names-btn";
+    removeBtn.textContent = "− Remove";
+    removeBtn.addEventListener("click", function() {
+      if (playerNames.length <= 1) return;
+      var newLength = playerNames.length - 1;
+      playerNames = playerNames.slice(0, newLength);
+
+      var newMarks = {};
+      for (var key in state.marks) {
+        if (!state.marks.hasOwnProperty(key)) continue;
+        var parts = key.split("-");
+        var pIdx = parseInt(parts[1], 10);
+        if (pIdx < newLength) {
+          newMarks[key] = state.marks[key];
+        }
+      }
+      state.marks = newMarks;
+
+      buildNameInputs();
+      buildDesktopTable();
+      buildMobileCards();
+      updateGuessDropdowns();
+    });
+
+    btnContainer.appendChild(addBtn);
+    btnContainer.appendChild(removeBtn);
+    row.appendChild(btnContainer);
+  }
+
+  function buildDesktopTable() {
+    var headerRow = document.getElementById("headerRow");
+    var bodyRows = document.getElementById("bodyRows");
+    headerRow.innerHTML = "";
+    bodyRows.innerHTML = "";
+
+    var playerCount = playerNames.length;
+
+    var thName = document.createElement("th");
+    thName.textContent = "Name";
+    headerRow.appendChild(thName);
+
+    for (var i = 0; i < playerCount; i++) {
+      var th = document.createElement("th");
+      th.textContent = getPlayerName(i);
+      headerRow.appendChild(th);
+    }
+
+    var thCross = document.createElement("th");
+    thCross.textContent = "Cross Out";
+    headerRow.appendChild(thCross);
+
+    var lastSection = null;
+
+    for (var c = 0; c < FLAT_CARDS.length; c++) {
+      var cardObj = FLAT_CARDS[c];
+      var section = cardObj.section;
+      var name = cardObj.name;
+
+      if (section !== lastSection) {
+        lastSection = section;
+        var secTr = document.createElement("tr");
+        secTr.className = "section-row";
+        var secTd = document.createElement("td");
+        secTd.colSpan = playerCount + 2;
+        secTd.textContent = section;
+        secTr.appendChild(secTd);
+        bodyRows.appendChild(secTr);
+      }
+
+      (function(cardIdx, sectionName, cardName) {
+        var tr = document.createElement("tr");
+        if (state.crossed[cardIdx]) {
+          tr.classList.add("row-crossed");
+        }
+
+        var tdName = document.createElement("td");
+        tdName.className = "card-name";
+        tdName.textContent = cardName;
+        tr.appendChild(tdName);
+
+        for (var p = 0; p < playerCount; p++) {
+          (function(playerIdx) {
+            var td = document.createElement("td");
+            var key = cardIdx + "-" + playerIdx;
+            var currentState = state.marks[key] || "none";
+
+            var cell = document.createElement("div");
+            cell.className = "mark-cell mark-" + currentState;
+            cell.textContent = MARK_SYMBOLS[currentState];
+            cell.title = MARK_LABELS[currentState];
+
+            cell.addEventListener("click", function() {
+              var cur = state.marks[key] || "none";
+              var idx = MARK_STATES.indexOf(cur);
+              var next = MARK_STATES[(idx + 1) % MARK_STATES.length];
+              state.marks[key] = next;
+              cell.className = "mark-cell mark-" + next;
+              cell.textContent = MARK_SYMBOLS[next];
+              cell.title = MARK_LABELS[next];
+              buildMobileCards();
+            });
+
+            td.appendChild(cell);
+            tr.appendChild(td);
+          })(p);
+        }
+
+        var tdCross = document.createElement("td");
+        tdCross.className = "cross-col";
+        var checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.className = "cross-checkbox";
+        checkbox.checked = !!state.crossed[cardIdx];
+
+        checkbox.addEventListener("change", function() {
+          state.crossed[cardIdx] = checkbox.checked;
+          if (checkbox.checked) {
+            tr.classList.add("row-crossed");
+          } else {
+            tr.classList.remove("row-crossed");
+          }
+          buildMobileCards();
+          updateGuessDropdowns();
+        });
+
+        tdCross.appendChild(checkbox);
+        tr.appendChild(tdCross);
+        bodyRows.appendChild(tr);
+      })(c, section, name);
+    }
+  }
+
+  function buildMobileCards() {
+    var container = document.getElementById("mobileSections");
+    container.innerHTML = "";
+    var playerCount = playerNames.length;
+
+    var lastSection = null;
+
+    for (var c = 0; c < FLAT_CARDS.length; c++) {
+      var cardObj = FLAT_CARDS[c];
+      var section = cardObj.section;
+      var name = cardObj.name;
+
+      if (section !== lastSection) {
+        lastSection = section;
+        var sectionHeader = document.createElement("div");
+        sectionHeader.className = "section-header";
+        sectionHeader.textContent = section;
+        container.appendChild(sectionHeader);
+      }
+
+      (function(cardIdx, sectionName, cardName) {
+        var cardDiv = document.createElement("div");
+        cardDiv.className = "clue-card";
+        if (state.crossed[cardIdx]) {
+          cardDiv.classList.add("crossed");
+        }
+
+        var topDiv = document.createElement("div");
+        topDiv.className = "card-top";
+
+        var titleSpan = document.createElement("span");
+        titleSpan.className = "card-title";
+        titleSpan.textContent = cardName;
+
+        var crossLabel = document.createElement("label");
+        crossLabel.className = "card-cross";
+
+        var checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = !!state.crossed[cardIdx];
+
+        checkbox.addEventListener("change", function() {
+          state.crossed[cardIdx] = checkbox.checked;
+          if (checkbox.checked) {
+            cardDiv.classList.add("crossed");
+          } else {
+            cardDiv.classList.remove("crossed");
+          }
+          buildDesktopTable();
+          updateGuessDropdowns();
+        });
+
+        var crossText = document.createElement("span");
+        crossText.textContent = "Out";
+
+        crossLabel.appendChild(checkbox);
+        crossLabel.appendChild(crossText);
+
+        topDiv.appendChild(titleSpan);
+        topDiv.appendChild(crossLabel);
+
+        var playersDiv = document.createElement("div");
+        playersDiv.className = "card-players";
+
+        for (var p = 0; p < playerCount; p++) {
+          (function(playerIdx) {
+            var key = cardIdx + "-" + playerIdx;
+            var currentState = state.marks[key] || "none";
+
+            var chip = document.createElement("button");
+            chip.type = "button";
+            chip.className = "player-chip chip-" + currentState;
+            chip.textContent = chipLabel(playerIdx, currentState);
+            chip.title = MARK_LABELS[currentState] + " – " + getPlayerName(playerIdx);
+
+            chip.addEventListener("click", function() {
+              var cur = state.marks[key] || "none";
+              var idx = MARK_STATES.indexOf(cur);
+              var next = MARK_STATES[(idx + 1) % MARK_STATES.length];
+              state.marks[key] = next;
+              chip.className = "player-chip chip-" + next;
+              chip.textContent = chipLabel(playerIdx, next);
+              chip.title = MARK_LABELS[next] + " – " + getPlayerName(playerIdx);
+              buildDesktopTable();
+            });
+
+            playersDiv.appendChild(chip);
+          })(p);
+        }
+
+        cardDiv.appendChild(topDiv);
+        cardDiv.appendChild(playersDiv);
+        container.appendChild(cardDiv);
+      })(c, section, name);
+    }
+  }
+
+  function populateSelect(select, placeholder, options, prevValue) {
+    select.innerHTML = "";
+
+    var def = document.createElement("option");
+    def.value = "";
+    def.textContent = placeholder;
+    select.appendChild(def);
+
+    for (var i = 0; i < options.length; i++) {
+      var opt = document.createElement("option");
+      opt.value = options[i];
+      opt.textContent = options[i];
+      select.appendChild(opt);
+    }
+
+    if (prevValue && options.indexOf(prevValue) !== -1) {
+      select.value = prevValue;
+    } else {
+      select.value = "";
+    }
+  }
+
+  function updateGuessDropdowns() {
+    var suspectSelect = document.getElementById("guessSuspect");
+    var weaponSelect  = document.getElementById("guessWeapon");
+    var locationSelect = document.getElementById("guessLocation");
+    if (!suspectSelect || !weaponSelect || !locationSelect) return;
+
+    var prevSuspect = suspectSelect.value;
+    var prevWeapon  = weaponSelect.value;
+    var prevLocation = locationSelect.value;
+
+    var suspects = [];
+    var weapons  = [];
+    var locations = [];
+
+    for (var i = 0; i < FLAT_CARDS.length; i++) {
+      if (state.crossed[i]) continue;
+      var card = FLAT_CARDS[i];
+      if (card.section === "Suspects") {
+        suspects.push(card.name);
+      } else if (card.section === "Weapons") {
+        weapons.push(card.name);
+      } else if (card.section === "Locations") {
+        locations.push(card.name);
+      }
+    }
+
+    populateSelect(suspectSelect, "Select suspect", suspects, prevSuspect);
+    populateSelect(weaponSelect,  "Select weapon", weapons, prevWeapon);
+    populateSelect(locationSelect, "Select location", locations, prevLocation);
+  }
+
+  function resetSheet() {
+    if (!confirm("Clear everything for this sheet?")) return;
+    state = { marks: {}, crossed: {} };
+    buildDesktopTable();
+    buildMobileCards();
+    updateGuessDropdowns();
+  }
+
+  document.addEventListener("DOMContentLoaded", function() {
+    buildNameInputs();
+    buildDesktopTable();
+    buildMobileCards();
+    updateGuessDropdowns();
+    document.getElementById("resetBtn").addEventListener("click", resetSheet);
+  });
+</script>
+</body>
+</html>
