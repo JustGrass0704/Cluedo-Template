@@ -470,6 +470,89 @@
       border-color: var(--accent);
     }
 
+	/* --- Quick filter (top) --- */
+	.quick-filter {
+	  margin: 10px 0 8px;
+	  padding: 8px 10px;
+	  border-radius: 12px;
+	  background: rgba(0,0,0,0.25);
+	  border: 1px solid rgba(255,255,255,0.05);
+	}
+
+	.quick-filter-title{
+	  text-align:center;
+	  font-size: 0.78rem;
+	  color: var(--muted);
+	  text-transform: uppercase;
+	  letter-spacing: 0.08em;
+	  margin-bottom: 8px;
+	}
+
+	.quick-filter-row{
+	  display:flex;
+	  gap:10px;
+	  flex-wrap:wrap;
+	  justify-content:center;
+	  align-items:flex-end;
+	}
+
+	.qf-field{
+	  display:flex;
+	  flex-direction:column;
+	  gap:4px;
+	  font-size:0.78rem;
+	}
+
+	.qf-label{ color: var(--muted); }
+
+	.qf-select{
+	  background:#101020;
+	  border-radius:999px;
+	  border:1px solid var(--border);
+	  padding:6px 12px;
+	  color:var(--text);
+	  font-size:0.85rem;
+	  min-width:160px;
+	}
+
+	.qf-select:focus{
+	  outline:none;
+	  border-color:var(--accent);
+	}
+
+	.qf-actions{
+	  display:flex;
+	  gap:6px;
+	}
+
+	.qf-btn{
+	  border-radius:999px;
+	  border:1px solid var(--border);
+	  background:#221f3b;
+	  color:var(--muted);
+	  font-size:0.82rem;
+	  padding:6px 12px;
+	  cursor:pointer;
+	}
+
+	.qf-btn:hover{
+	  border-color:var(--accent);
+	  color:var(--accent);
+	}
+
+	.qf-btn-danger:hover{
+	  border-color:#ff8080;
+	  color:#ffb0b0;
+	}
+
+	.qf-hint{
+	  margin-top:6px;
+	  text-align:center;
+	  font-size:0.75rem;
+	  color:var(--muted);
+	}
+
+
     @media (max-width: 720px) {
       #desktopContainer { display: none; }
       #mobileContainer  { display: block; }
@@ -530,6 +613,36 @@
   <div id="mobileContainer">
     <div id="mobileSections"></div>
   </div>
+
+	<!-- Quick filter (show only the current guess rows) -->
+	<div class="quick-filter" id="quickFilter">
+	  <div class="quick-filter-title">Quick Filter (Show Only These 3)</div>
+
+	  <div class="quick-filter-row">
+		<div class="qf-field">
+		  <span class="qf-label">Suspect</span>
+		  <select id="filterSuspect" class="qf-select"></select>
+		</div>
+
+		<div class="qf-field">
+		  <span class="qf-label">Weapon</span>
+		  <select id="filterWeapon" class="qf-select"></select>
+		</div>
+
+		<div class="qf-field">
+		  <span class="qf-label">Location</span>
+		  <select id="filterLocation" class="qf-select"></select>
+		</div>
+
+		<div class="qf-actions">
+		  <button class="qf-btn" id="applyFilterBtn" type="button">Apply</button>
+		  <button class="qf-btn qf-btn-danger" id="clearFilterBtn" type="button">Clear</button>
+		</div>
+	  </div>
+
+	  <div class="qf-hint">Tip: you can copy your “My Current Guess” into these, then Apply.</div>
+	</div>
+
 
   <!-- Guess section -->
   <div class="guess-section">
@@ -592,12 +705,11 @@
         "Andrew’s Room",
         "Peter’s Room",
         "John’s Room",
-        "Bathroom",
         "Garage",
         "Therapy Room",
         "Living Room",
         "Backyard",
-        "Kitchen"
+		"Kitchen"
       ]
     }
   ];
@@ -761,17 +873,20 @@
       var cardObj = FLAT_CARDS[c];
       var section = cardObj.section;
       var name = cardObj.name;
+	  if (!shouldShowCard(cardObj)) continue;
+
 
       if (section !== lastSection) {
-        lastSection = section;
-        var secTr = document.createElement("tr");
-        secTr.className = "section-row";
-        var secTd = document.createElement("td");
-        secTd.colSpan = playerCount + 3;
-        secTd.textContent = section;
-        secTr.appendChild(secTd);
-        bodyRows.appendChild(secTr);
-      }
+		  lastSection = section;
+		  var secTr = document.createElement("tr");
+		  secTr.className = "section-row";
+		  var secTd = document.createElement("td");
+		  secTd.colSpan = playerCount + 3;
+		  secTd.textContent = section;
+		  secTr.appendChild(secTd);
+		  bodyRows.appendChild(secTr);
+		}
+
 
       (function(cardIdx, sectionName, cardName) {
         var tr = document.createElement("tr");
@@ -860,6 +975,37 @@
     }
   }
 
+	// --- Quick filter state ---
+	var quickFilter = {
+	  suspect: "",
+	  weapon: "",
+	  location: ""
+	};
+
+	function isFiltering() {
+	  return !!(quickFilter.suspect || quickFilter.weapon || quickFilter.location);
+	}
+
+	function shouldShowCard(cardObj) {
+	  // If no filter active, show everything
+	  if (!isFiltering()) return true;
+
+	  // If a filter value is set for a section, ONLY show that card in that section.
+	  if (cardObj.section === "Suspects" && quickFilter.suspect) {
+		return cardObj.name === quickFilter.suspect;
+	  }
+	  if (cardObj.section === "Weapons" && quickFilter.weapon) {
+		return cardObj.name === quickFilter.weapon;
+	  }
+	  if (cardObj.section === "Locations" && quickFilter.location) {
+		return cardObj.name === quickFilter.location;
+	  }
+
+	  // If section not filtered, hide it while filtering (keeps it to "just these show")
+	  return false;
+	}
+
+
   function buildMobileCards() {
     var container = document.getElementById("mobileSections");
     container.innerHTML = "";
@@ -871,6 +1017,7 @@
       var cardObj = FLAT_CARDS[c];
       var section = cardObj.section;
       var name = cardObj.name;
+	  if (!shouldShowCard(cardObj)) continue;
 
       if (section !== lastSection) {
         lastSection = section;
@@ -1005,6 +1152,48 @@
     }
   }
 
+	function updateFilterDropdowns() {
+	  var fSus = document.getElementById("filterSuspect");
+	  var fWea = document.getElementById("filterWeapon");
+	  var fLoc = document.getElementById("filterLocation");
+	  if (!fSus || !fWea || !fLoc) return;
+
+	  // Build full lists (not affected by Own/Shown)
+	  var suspects = SECTIONS[0].sortedCards.slice();
+	  var weapons  = SECTIONS[1].sortedCards.slice();
+	  var locations = SECTIONS[2].sortedCards.slice();
+
+	  populateSelect(fSus, "Any suspect", suspects, quickFilter.suspect);
+	  populateSelect(fWea, "Any weapon", weapons, quickFilter.weapon);
+	  populateSelect(fLoc, "Any location", locations, quickFilter.location);
+	}
+
+	function applyQuickFilterFromUI() {
+	  var fSus = document.getElementById("filterSuspect");
+	  var fWea = document.getElementById("filterWeapon");
+	  var fLoc = document.getElementById("filterLocation");
+
+	  quickFilter.suspect  = fSus ? (fSus.value || "") : "";
+	  quickFilter.weapon   = fWea ? (fWea.value || "") : "";
+	  quickFilter.location = fLoc ? (fLoc.value || "") : "";
+
+	  buildDesktopTable();
+	  buildMobileCards();
+
+	  // Jump user straight to the sheet content
+	  var desktop = document.getElementById("desktopContainer");
+	  var mobile  = document.getElementById("mobileContainer");
+	  (desktop && desktop.style.display !== "none" ? desktop : mobile).scrollIntoView({ behavior: "smooth", block: "start" });
+	}
+
+	function clearQuickFilter() {
+	  quickFilter = { suspect: "", weapon: "", location: "" };
+	  updateFilterDropdowns();
+	  buildDesktopTable();
+	  buildMobileCards();
+	}
+
+
   function updateGuessDropdowns() {
     var suspectSelect = document.getElementById("guessSuspect");
     var weaponSelect  = document.getElementById("guessWeapon");
@@ -1042,17 +1231,24 @@
     buildDesktopTable();
     buildMobileCards();
     updateGuessDropdowns();
+	quickFilter = { suspect: "", weapon: "", location: "" };
+    updateFilterDropdowns();
+
   }
 
-  document.addEventListener("DOMContentLoaded", function() {
-    buildNameInputs();
-    buildDesktopTable();
-    buildMobileCards();
-    updateGuessDropdowns();
-    document.getElementById("resetBtn").addEventListener("click", resetSheet);
-  });
+	document.addEventListener("DOMContentLoaded", function() {
+	  buildNameInputs();
+	  buildDesktopTable();
+	  buildMobileCards();
+	  updateGuessDropdowns();
+
+	  updateFilterDropdowns();
+	  document.getElementById("applyFilterBtn").addEventListener("click", applyQuickFilterFromUI);
+	  document.getElementById("clearFilterBtn").addEventListener("click", clearQuickFilter);
+
+	  document.getElementById("resetBtn").addEventListener("click", resetSheet);
+	});
+
 </script>
 </body>
 </html>
-
-
