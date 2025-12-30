@@ -552,6 +552,19 @@
 	  color:var(--muted);
 	}
 
+	.player-remove-select{
+	  background:#181827;
+	  border-radius:999px;
+	  border:1px solid var(--border);
+	  padding:3px 10px;
+	  font-size:0.8rem;
+	  color:var(--text);
+	}
+	.player-remove-select:focus{
+	  outline:none;
+	  border-color:var(--accent);
+	}
+
 
     @media (max-width: 720px) {
       #desktopContainer { display: none; }
@@ -597,23 +610,6 @@
     <button class="reset-btn" id="resetBtn">Reset sheet</button>
   </div>
 
-  <!-- Desktop/tablet layout -->
-  <div id="desktopContainer">
-    <div class="table-wrapper">
-      <table>
-        <thead>
-        <tr id="headerRow"></tr>
-        </thead>
-        <tbody id="bodyRows"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- Mobile layout -->
-  <div id="mobileContainer">
-    <div id="mobileSections"></div>
-  </div>
-
 	<!-- Quick filter (show only the current guess rows) -->
 	<div class="quick-filter" id="quickFilter">
 	  <div class="quick-filter-title">Quick Filter (Show Only These 3)</div>
@@ -643,6 +639,22 @@
 	  <div class="qf-hint">Tip: you can copy your “My Current Guess” into these, then Apply.</div>
 	</div>
 
+  <!-- Desktop/tablet layout -->
+  <div id="desktopContainer">
+    <div class="table-wrapper">
+      <table>
+        <thead>
+        <tr id="headerRow"></tr>
+        </thead>
+        <tbody id="bodyRows"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Mobile layout -->
+  <div id="mobileContainer">
+    <div id="mobileSections"></div>
+  </div>
 
   <!-- Guess section -->
   <div class="guess-section">
@@ -729,8 +741,8 @@
     }
   })();
 
-  var INITIAL_PLAYER_NAMES = [""];
-  var MAX_PLAYERS = 8;
+  var INITIAL_PLAYER_NAMES = ["Greg", "Tania", "Mosiah", "Hailey", "Beth", "John", "Peter", "Zara", "Andrew"];
+  var MAX_PLAYERS = 9;
 
   var MARK_STATES = ["none", "tick", "cross", "maybe"];
   var MARK_SYMBOLS = {
