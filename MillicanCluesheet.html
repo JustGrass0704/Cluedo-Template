@@ -824,34 +824,65 @@
       updateGuessDropdowns();
     });
 
-    var removeBtn = document.createElement("button");
-    removeBtn.className = "names-btn";
-    removeBtn.textContent = "− Remove";
-    removeBtn.addEventListener("click", function() {
-      if (playerNames.length <= 1) return;
-      var newLength = playerNames.length - 1;
-      playerNames = playerNames.slice(0, newLength);
+	// --- Choose-player removal UI ---
+	var removeSelect = document.createElement("select");
+	removeSelect.className = "player-remove-select";
 
-      var newMarks = {};
-      for (var key in state.marks) {
-        if (!state.marks.hasOwnProperty(key)) continue;
-        var parts = key.split("-");
-        var pIdx = parseInt(parts[1], 10);
-        if (pIdx < newLength) {
-          newMarks[key] = state.marks[key];
-        }
-      }
-      state.marks = newMarks;
+	// Placeholder option
+	var ph = document.createElement("option");
+	ph.value = "";
+	ph.textContent = "Remove…";
+	removeSelect.appendChild(ph);
 
-      buildNameInputs();
-      buildDesktopTable();
-      buildMobileCards();
-      updateGuessDropdowns();
-    });
+	// Player options
+	for (var r = 0; r < playerNames.length; r++) {
+	  var opt = document.createElement("option");
+	  opt.value = String(r);
+	  opt.textContent = getPlayerName(r);
+	  removeSelect.appendChild(opt);
+	}
+
+	var removeBtn = document.createElement("button");
+	removeBtn.className = "names-btn";
+	removeBtn.textContent = "Remove";
+	removeBtn.addEventListener("click", function() {
+	  if (playerNames.length <= 1) return;
+
+	  var idxStr = removeSelect.value;
+	  if (idxStr === "") return; // nothing selected
+	  var removeIdx = parseInt(idxStr, 10);
+	  if (isNaN(removeIdx) || removeIdx < 0 || removeIdx >= playerNames.length) return;
+
+	  // 1) Remove the player name
+	  playerNames.splice(removeIdx, 1);
+
+	  // 2) Rebuild marks, shifting indices down after the removed player
+	  var newMarks = {};
+	  for (var key in state.marks) {
+		if (!state.marks.hasOwnProperty(key)) continue;
+		var parts = key.split("-");
+		var cardIdx = parseInt(parts[0], 10);
+		var pIdx = parseInt(parts[1], 10);
+
+		if (pIdx === removeIdx) continue;             // drop removed player's marks
+		var newPIdx = (pIdx > removeIdx) ? (pIdx - 1) : pIdx; // shift others
+		newMarks[cardIdx + "-" + newPIdx] = state.marks[key];
+	  }
+	  state.marks = newMarks;
+
+	  // 3) Re-render
+	  buildNameInputs();
+	  buildDesktopTable();
+	  buildMobileCards();
+	  updateGuessDropdowns();
+	});
+
 
     btnContainer.appendChild(addBtn);
-    btnContainer.appendChild(removeBtn);
-    row.appendChild(btnContainer);
+	btnContainer.appendChild(removeSelect);
+	btnContainer.appendChild(removeBtn);
+	row.appendChild(btnContainer);
+
   }
 
   function buildDesktopTable() {
@@ -1265,4 +1296,3 @@
 </script>
 </body>
 </html>
-
